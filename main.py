@@ -94,9 +94,9 @@ except Exception as e:                                  # <<< DO NOT MODIFY >>>
 while start_flag == False:
     x_joystick = x_joystick_pin.read_u16()
     y_joystick = y_joystick_pin.read_u16()
-    if len(r) == 4 and r == password:
+    if len(r) == passwordLength and r == password:
         start_flag = True
-    elif len(r) == 4 and r != password:
+    elif len(r) == passwordLength and r != password:
         r = ()
 
     elif wait == False:
