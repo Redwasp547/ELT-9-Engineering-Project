@@ -7,7 +7,7 @@ sleep(5) # required for stability          # <<< DO NOT MODIFY >>>
 # Imports for MQTT communication           # <<< DO NOT MODIFY >>>
 import network                             # <<< DO NOT MODIFY >>>
 import json                                # <<< DO NOT MODIFY >>>
-from robust import MQTTClient        # <<< DO NOT MODIFY >>>
+from umqtt.robust import MQTTClient        # <<< DO NOT MODIFY >>>
 
 from machine import ADC, Pin, I2C
 from picozero import Button
