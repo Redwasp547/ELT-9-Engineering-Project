@@ -9,7 +9,10 @@ import network                             # <<< DO NOT MODIFY >>>
 import json                                # <<< DO NOT MODIFY >>>
 from robust import MQTTClient        # <<< DO NOT MODIFY >>>
 
-from machine import ADC
+from machine import ADC, Pin, I2C
+from picozero import Button
+from ssd1306 import SSD1306_I2C
+
 from math import log
 
 # Imports the library to make a random number. This is used to
@@ -23,12 +26,30 @@ import random
 
 thermistor = ADC(26)
 
+y_joystick_pin = ADC(27)
+x_joystick_pin = ADC(28)
+z_joystick_pin = Button(22)
+
+display_width = 128 # pixel x values = 0 to 127
+display_height = 64 # pixel y values = 0 to 63
+i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000) # TX pin is Pin 0, RX pin is Pin 1
+display = SSD1306_I2C(display_width, display_height, i2c)
+
 ############################################################
 ##################### OTHER SETUP STUFF ####################
 ############################################################
 
 V_in = 3.3 #[volts]
 R1 = 10000 #[ohms]
+
+start_flag = False
+
+password = (1, 2, 3, 4)
+passwordLength = 4
+
+wait = 0
+
+r = 0
 
 #steinhart constants
 A = 1.129e-3
@@ -71,6 +92,38 @@ try:                                                    # <<< DO NOT MODIFY >>>
 except Exception as e:                                  # <<< DO NOT MODIFY >>>
     print("Failed to connect to MQTT broker:", e)
 
+while start_flag == False:
+    x_joystick = x_joystick_pin.read_u16()
+    y_joystick = y_joystick_pin.read_u16()
+
+    if password[r] == 1 and x_joystick > 60000:
+        r += 1
+        wait = 1
+    elif password[r] == 2 and y_joystick < 3000:
+        r += 1
+        wait = 2
+    elif password[r] == 3 and y_joystick >  60000:
+        r += 1
+        wait = 3
+    elif password[r] == 4 and x_joystick < 3000:
+        r += 1
+        wait = 4
+    elif password[r] == 5 and y_joystick > 60000 and x_joystick > 60000:
+        r += 1
+        wait = 5
+    elif password[r] == 6 and y_joystick > 60000 and x_joystick < 3000:
+        r += 1
+        wait = 6
+    elif password[r] == 7 and y_joystick < 3000 and x_joystick > 60000:
+        r += 1
+        wait = 7
+    elif password[r] == 8 and y_joystick < 3000 and x_joystick < 30000:
+        r += 1
+        wait = 8
+    if r == 4:
+        start_flag = True
+        
+
 
 ############################################################
 ####################### INFINITE LOOP ######################
@@ -80,6 +133,9 @@ while True:
     # !!!-- You must use this variable name: temperature_sensor_reading --!!!
     # !!!-- Currently, the temperature reading is just a random number for demo purposes --!!!
     adc_value = thermistor.read_u16() #0 to 65535
+    x_joystick = x_joystick_pin.read_u16()
+    y_joystick = y_joystick_pin.read_u16()
+    z_joystick = z_joystick_pin.is_pressed
     V_out = (V_in / 65535) * adc_value #[volts]
     Rt = (V_out * R1) / (V_in - V_out) #[ohms] thermistor resistance
     TempK = 1 / (A + (B * log(Rt)) + (C * pow(log(Rt), 3)))
