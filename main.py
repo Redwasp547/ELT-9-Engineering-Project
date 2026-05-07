@@ -46,10 +46,9 @@ start_flag = False
 
 password = (1, 2, 3, 4)
 passwordLength = 4
+wait = False
 
-wait = 0
-
-r = 0
+r = ()
 
 #steinhart constants
 A = 1.129e-3
@@ -64,7 +63,7 @@ TOPIC = "pico/data" # "pico/data" is just a label                               
                     # It helps organize messages, like folders in a file system.  # <<< DO NOT MODIFY >>>
                     # The TOPIC could be any string, but leave it as "pico/data"  # <<< DO NOT MODIFY >>>
 
-SENSOR_ID = "Team02"  # !!!-- CHANGE THIS AS DIRECTED BY DR. WILFONG --!!!
+SENSOR_ID = "Team08"  # !!!-- CHANGE THIS AS DIRECTED BY DR. WILFONG --!!!
 
 # Connect to Wi-Fi                                          # <<< DO NOT MODIFY >>>
 wlan = network.WLAN(network.STA_IF)                         # <<< DO NOT MODIFY >>>
@@ -95,33 +94,39 @@ except Exception as e:                                  # <<< DO NOT MODIFY >>>
 while start_flag == False:
     x_joystick = x_joystick_pin.read_u16()
     y_joystick = y_joystick_pin.read_u16()
-
-    if password[r] == 1 and x_joystick > 60000:
-        r += 1
-        wait = 1
-    elif password[r] == 2 and y_joystick < 3000:
-        r += 1
-        wait = 2
-    elif password[r] == 3 and y_joystick >  60000:
-        r += 1
-        wait = 3
-    elif password[r] == 4 and x_joystick < 3000:
-        r += 1
-        wait = 4
-    elif password[r] == 5 and y_joystick > 60000 and x_joystick > 60000:
-        r += 1
-        wait = 5
-    elif password[r] == 6 and y_joystick > 60000 and x_joystick < 3000:
-        r += 1
-        wait = 6
-    elif password[r] == 7 and y_joystick < 3000 and x_joystick > 60000:
-        r += 1
-        wait = 7
-    elif password[r] == 8 and y_joystick < 3000 and x_joystick < 30000:
-        r += 1
-        wait = 8
-    if r == 4:
+    if len(r) == 4 and r == password:
         start_flag = True
+    elif len(r) == 4 and r != password:
+        r = ()
+
+    elif wait == False:
+        if x_joystick > 60000:
+            r += (1,)
+            wait = True
+        elif y_joystick < 3000:
+            r += (2,)
+            wait = True
+        elif y_joystick >  60000:
+            r += (3,)
+            wait = True
+        elif x_joystick < 3000:
+            r += (4,)
+            wait = True
+        elif y_joystick > 60000 and x_joystick > 60000:
+            r += (5,)
+            wait = True
+        elif y_joystick > 60000 and x_joystick < 3000:
+            r += (6,)
+            wait = True
+        elif y_joystick < 3000 and x_joystick > 60000:
+            r += (7,)
+            wait = True
+        elif y_joystick < 3000 and x_joystick < 30000:
+            r += (8,)
+            wait = True
+    if wait:
+        if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
+            wait = False
         
 
 
