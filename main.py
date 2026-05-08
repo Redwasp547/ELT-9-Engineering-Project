@@ -35,6 +35,10 @@ display_height = 64 # pixel y values = 0 to 63
 i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000) # TX pin is Pin 0, RX pin is Pin 1
 display = SSD1306_I2C(display_width, display_height, i2c)
 
+display.fill(0) # clears display
+display.text("Connecting to Hub", 0, 10) # display text starting at x=0, y=10
+display.show()
+
 ############################################################
 ##################### OTHER SETUP STUFF ####################
 ############################################################
@@ -91,14 +95,30 @@ try:                                                    # <<< DO NOT MODIFY >>>
 except Exception as e:                                  # <<< DO NOT MODIFY >>>
     print("Failed to connect to MQTT broker:", e)
 
+print("enter password")
 while start_flag == False:
+    display.fill(0) # clears display
+    display.text("Enter Password", 0, 10) # display text starting at x=0, y=10
+    display.show()
+    
     x_joystick = x_joystick_pin.read_u16()
     y_joystick = y_joystick_pin.read_u16()
+    
     if len(r) == passwordLength and r == password:
         start_flag = True
+        display.fill(0) # clears display
+        display.text("Correct password", 0, 10) # display text starting at x=0, y=10
+        display.show()
+        sleep(1)
     elif len(r) == passwordLength and r != password:
         r = ()
-
+        print("incorrect")
+        display.fill(0) # clears display
+        display.text("Wrong password", 0, 10)
+        display.text("Please wait 15 secs", 0, 20)# display text starting at x=0, y=10
+        display.show()
+        sleep(15)
+    
     elif wait == False:
         if x_joystick > 60000:
             r += (1,)
@@ -127,6 +147,7 @@ while start_flag == False:
     if wait:
         if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
             wait = False
+    sleep(.1)
         
 
 
@@ -145,6 +166,7 @@ while True:
     Rt = (V_out * R1) / (V_in - V_out) #[ohms] thermistor resistance
     TempK = 1 / (A + (B * log(Rt)) + (C * pow(log(Rt), 3)))
     TempC = TempK - 273.15 #[Celsius]
+    print(TempC)
 
     temperature_sensor_reading = TempC
     
@@ -162,4 +184,4 @@ while True:
     except Exception as e:                                                     # <<< DO NOT MODIFY >>>
         print("Publish failed:",e)
     
-    sleep(2) # Send MQTT payload every 2 seconds
+    sleep(10) # Send MQTT payload every 10 seconds
