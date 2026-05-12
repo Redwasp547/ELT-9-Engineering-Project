@@ -48,6 +48,10 @@ R1 = 10000 #[ohms]
 
 start_flag = False
 
+i = 0
+
+screen = 0
+
 userSelect = 1
 
 password = (1, 2, 3, 4)
@@ -55,6 +59,8 @@ passwordLength = 4
 wait = False
 
 r = ()
+
+newPass = True
 
 repeat = 0
 
@@ -121,7 +127,7 @@ while start_flag == False:
         display.text("Wrong password", 0, 10)
         display.text("Please wait 15 secs", 0, 20)# display text starting at x=0, y=10
         display.show()
-        sleep(15)
+        sleep(0)
     
     elif wait == False:
         if x_joystick > 60000:
@@ -175,17 +181,96 @@ while True:
     
     temperature_sensor_reading = TempC
     
-    if userSelect == 1:
+    if userSelect == 1 and screen == 0:
         display.fill(0) # clears display
-        display.text("-> display temp", 0, 10)
-        display.text("   change pass", 0, 20)# display text starting at x=0, y=10
+        display.text("-> Display Temp", 0, 10)
+        display.text("   Change Pass", 0, 20)# display text starting at x=0, y=10
         display.show()
-    elif userSelect == 0:
+        if z_joystick == True:
+            screen = 1
+            sleep(1)
+    if userSelect == 0 and screen == 0:
         display.fill(0) # clears display
-        display.text("   display temp", 0, 10)
-        display.text("-> change pass", 0, 20)# display text starting at x=0, y=10
+        display.text("   Display Temp", 0, 10)
+        display.text("-> Change Pass", 0, 20)# display text starting at x=0, y=10
         display.show()
-    if wait == False  : 
+        if z_joystick == True:
+            screen = 2
+            sleep(1)
+    if userSelect == 1 and screen == 1:
+        display.fill(0) # clears display
+        display.text(str(TempC), 0, 10)
+        display.text("-> Go Back", 0, 20)# display text starting at x=0, y=10
+        display.show()
+        if z_joystick == True:
+            screen = 0
+            sleep(1)
+    if userSelect == 0 and screen == 2:
+        password = ()
+        display.fill(0) # clears display
+        display.text("Enter new", 0, 10)
+        display.text("password", 0, 20)
+        display.show()
+        
+        while password <= passwordLength:
+            x_joystick = x_joystick_pin.read_u16()
+            y_joystick = y_joystick_pin.read_u16()
+            z_joystick = z_joystick_pin.is_pressed
+            print("in while loop"
+                  )
+            if x_joystick > 60000:
+                password += (1,)
+                wait = True
+                newPass = True
+                print("1")
+            elif y_joystick < 3000:
+                password += (2,)
+                wait = True
+                newPass = True
+                print("2")
+            elif y_joystick >  60000:
+                password += (3,)
+                wait = True
+                newPass = True
+                print("3")
+            elif x_joystick < 3000:
+                password += (4,)
+                wait = True
+                newPass = True
+                print("4")
+            elif y_joystick > 60000 and x_joystick > 60000:
+                password += (5,)
+                wait = True
+                newPass = True
+                print("5")
+            elif y_joystick > 60000 and x_joystick < 3000:
+                password += (6,)
+                wait = True
+                newPass = True
+                print("6")
+            elif y_joystick < 3000 and x_joystick > 60000:
+                password += (7,)
+                wait = True
+                newPass = True
+                print("7")
+            elif y_joystick < 3000 and x_joystick < 30000:
+                password += (8,)
+                wait = True
+                newPass = True
+                print("8")
+            if wait:
+                if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
+                    wait = False
+                    newPass = False
+            if wait == False and newPass == False:
+                newPass = False
+            print(password)
+            sleep(.1)
+                
+        screen = 0
+
+
+    if wait == False: 
         if y_joystick > 60000 and userSelect != 0:
             userSelect -= 1
             wait = True
@@ -193,10 +278,11 @@ while True:
             userSelect += 1
             wait = True
     elif wait:
-        if y_joystick < 38000 and y_joystick > 28000 and z_joystick == False:
+        if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000 and z_joystick == False:
             wait = False
     print(userSelect)
     
+
     # Create and send MQTT payload                               # <<< DO NOT MODIFY >>>
     message_data = {                                             # <<< DO NOT MODIFY >>>
         "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
