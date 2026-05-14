@@ -82,14 +82,14 @@ TOPIC = "pico/data" # "pico/data" is just a label                               
 SENSOR_ID = "Team08"  # !!!-- CHANGE THIS AS DIRECTED BY DR. WILFONG --!!!
 
 # Connect to Wi-Fi                                          # <<< DO NOT MODIFY >>>
-wlan = network.WLAN(network.STA_IF)                         # <<< DO NOT MODIFY >>>
-wlan.active(True)                                           # <<< DO NOT MODIFY >>>
-wlan.config(pm = 0xa11140) # disable Wi-Fi low power mode   # <<< DO NOT MODIFY >>>
-wlan.connect(SSID, PASSWORD)                                # <<< DO NOT MODIFY >>>
+#wlan = network.WLAN(network.STA_IF)                         # <<< DO NOT MODIFY >>>
+#wlan.active(True)                                           # <<< DO NOT MODIFY >>>
+#wlan.config(pm = 0xa11140) # disable Wi-Fi low power mode   # <<< DO NOT MODIFY >>>
+#wlan.connect(SSID, PASSWORD)                                # <<< DO NOT MODIFY >>>
 
 print("Attempting to connect to Wi-Fi")
-while not wlan.isconnected():                               # <<< DO NOT MODIFY >>>
-    pass                                                    # <<< DO NOT MODIFY >>>
+#while not wlan.isconnected():                               # <<< DO NOT MODIFY >>>
+#    pass                                                    # <<< DO NOT MODIFY >>>
 
 sleep(2)  # Extra delay for stability                       # <<< DO NOT MODIFY >>>
 print("Connected to Wi-Fi!")
@@ -97,15 +97,15 @@ print("Connected to Wi-Fi!")
 
 
 # Connect to MQTT broker with reconnect support         # <<< DO NOT MODIFY >>>
-client = MQTTClient(f"client_{SENSOR_ID}", MQTT_BROKER) # <<< DO NOT MODIFY >>>
-client.DEBUG = True                                     # <<< DO NOT MODIFY >>>
+#client = MQTTClient(f"client_{SENSOR_ID}", MQTT_BROKER) # <<< DO NOT MODIFY >>>
+#client.DEBUG = True                                     # <<< DO NOT MODIFY >>>
 
 # Try to connect to MQTT broker                         # <<< DO NOT MODIFY >>>
-try:                                                    # <<< DO NOT MODIFY >>>
-    client.connect()                                    # <<< DO NOT MODIFY >>>
-    print("Connected to MQTT broker!")
-except Exception as e:                                  # <<< DO NOT MODIFY >>>
-    print("Failed to connect to MQTT broker:", e)
+#try:                                                    # <<< DO NOT MODIFY >>>
+#    client.connect()                                    # <<< DO NOT MODIFY >>>
+#    print("Connected to MQTT broker!")
+#except Exception as e:                                  # <<< DO NOT MODIFY >>>
+#    print("Failed to connect to MQTT broker:", e)
 
 print("enter password")
 while start_flag == False:
@@ -178,7 +178,6 @@ while True:
     Rt = (V_out * R1) / (V_in - V_out) #[ohms] thermistor resistance
     TempK = 1 / (A + (B * log(Rt)) + (C * pow(log(Rt), 3)))
     TempC = TempK - 273.15 #[Celsius]
-    print(TempC)
 
     
     temperature_sensor_reading = TempC
@@ -218,8 +217,9 @@ while True:
         if z_joystick == True:
             screen = 0
             wait = True
-    if userSelect == 0 and screen == 2 and wait == False:
+    if userSelect == 0 and screen == 2:
         r = ()
+        start_flag = False
         while start_flag == False:
             display.fill(0) # clears display
             display.text("Enter old", 0, 10)
@@ -273,7 +273,6 @@ while True:
                 if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
                     wait = False
             sleep(.1)
-
         password = ()
         display.fill(0) # clears display
         display.text("Enter new", 0, 10)
@@ -331,10 +330,71 @@ while True:
                     newPass = False
             print(password)
             sleep(.1)
+        screen = 0
+    if screen == 3:
+        r = ()
+        start_flag = False
+#		if repeat >= 10000:
+#            try:                                                                       # <<< DO NOT MODIFY >>>
+#                client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
+#                print(f"Published: {message_json}") # Print MQTT payload to the Shell
+#            except Exception as e:                                                     # <<< DO NOT MODIFY >>>
+#                print("Publish failed:",e)
+#            repeat = 0
+        print("screen3")
+        while start_flag == False:
+            display.fill(0) # clears display
+            display.text("Enter password", 0, 10)
+            display.show()
 
-        display.fill(0) # clears display
-        display.text("password Changed", 0, 10)
-        display.show() 
+            x_joystick = x_joystick_pin.read_u16()
+            y_joystick = y_joystick_pin.read_u16()
+
+            if len(r) == passwordLength and r == password:
+                start_flag = True
+                display.fill(0) # clears display
+                display.text("Correct password", 0, 10) # display text starting at x=0, y=10
+                display.show()
+                sleep(1)
+            elif len(r) == passwordLength and r != password:
+                r = ()
+                print("incorrect")
+                display.fill(0) # clears display
+                display.text("Wrong password", 0, 10)
+                display.text("Please wait 15 secs", 0, 20)# display text starting at x=0, y=10
+                display.show()
+                sleep(15)
+
+            elif wait == False:
+                if x_joystick > 60000:
+                    r += (1,)
+                    wait = True
+                elif y_joystick < 3000:
+                    r += (2,)
+                    wait = True
+                elif y_joystick >  60000:
+                    r += (3,)
+                    wait = True
+                elif x_joystick < 3000:
+                    r += (4,)
+                    wait = True
+                elif y_joystick > 60000 and x_joystick > 60000:
+                    r += (5,)
+                    wait = True
+                elif y_joystick > 60000 and x_joystick < 3000:
+                    r += (6,)
+                    wait = True
+                elif y_joystick < 3000 and x_joystick > 60000:
+                    r += (7,)
+                    wait = True
+                elif y_joystick < 3000 and x_joystick < 30000:
+                    r += (8,)
+                    wait = True
+            if wait:
+                if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
+                    wait = False
+#			repeat += 1
+            sleep(.1)
         sleep(1)
         screen = 0
 
@@ -349,23 +409,22 @@ while True:
     elif wait:
         if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000 and z_joystick == False:
             wait = False
-    print(userSelect)
     
 
     # Create and send MQTT payload                               # <<< DO NOT MODIFY >>>
-    message_data = {                                             # <<< DO NOT MODIFY >>>
-        "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
-        "temperatureReading": temperature_sensor_reading         # <<< DO NOT MODIFY >>>
-    }                                                            # <<< DO NOT MODIFY >>>
-    message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
+#    message_data = {                                             # <<< DO NOT MODIFY >>>
+#        "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
+#        "temperatureReading": temperature_sensor_reading         # <<< DO NOT MODIFY >>>
+#    }                                                            # <<< DO NOT MODIFY >>>
+#    message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
     
     # Try to publish message to MQTT broker                                    # <<< DO NOT MODIFY >>>
     if repeat == 100:
-        try:                                                                       # <<< DO NOT MODIFY >>>
-            client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
-            print(f"Published: {message_json}") # Print MQTT payload to the Shell
-        except Exception as e:                                                     # <<< DO NOT MODIFY >>>
-            print("Publish failed:",e)
+#        try:                                                                       # <<< DO NOT MODIFY >>>
+#            client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
+#            print(f"Published: {message_json}") # Print MQTT payload to the Shell
+#        except Exception as e:                                                     # <<< DO NOT MODIFY >>>
+#            print("Publish failed:",e)
         repeat = 0
     repeat += 1
 
@@ -429,79 +488,10 @@ while True:
                 if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
                     wait = False
 
-            # Create and send MQTT payload                               # <<< DO NOT MODIFY >>>
-            message_data = {                                             # <<< DO NOT MODIFY >>>
-                "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
-                "temperatureReading": temperature_sensor_reading         # <<< DO NOT MODIFY >>>
-            }                                                            # <<< DO NOT MODIFY >>>
-            message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
             
-            # Try to publish message to MQTT broker                                    # <<< DO NOT MODIFY >>>
-            if repeat == 100:
-                try:                                                                       # <<< DO NOT MODIFY >>>
-                    client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
-                    print(f"Published: {message_json}") # Print MQTT payload to the Shell
-                except Exception as e:                                                     # <<< DO NOT MODIFY >>>
-                    print("Publish failed:",e)
-                repeat = 0
-                while start_flag == False:
-                    display.fill(0) # clears display
-                    display.text("Enter old", 0, 10)
-                    display.text("password", 0, 20)
-                    display.show()
-    
-                    x_joystick = x_joystick_pin.read_u16()
-                    y_joystick = y_joystick_pin.read_u16()
-    
-                    if len(r) == passwordLength and r == password:
-                        start_flag = True
-                        display.fill(0) # clears display
-                        display.text("Correct password", 0, 10) # display text starting at x=0, y=10
-                        display.show()
-                        sleep(1)
-                    elif len(r) == passwordLength and r != password:
-                        r = ()
-                        print("incorrect")
-                        display.fill(0) # clears display
-                        display.text("Wrong password", 0, 10)
-                        display.text("Please wait 15 secs", 0, 20)# display text starting at x=0, y=10
-                        display.show()
-                        sleep(15)
-    
-                    elif wait == False:
-                        if x_joystick > 60000:
-                            r += (1,)
-                            wait = True
-                        elif y_joystick < 3000:
-                            r += (2,)
-                            wait = True
-                        elif y_joystick >  60000:
-                            r += (3,)
-                            wait = True
-                        elif x_joystick < 3000:
-                            r += (4,)
-                            wait = True
-                        elif y_joystick > 60000 and x_joystick > 60000:
-                            r += (5,)
-                            wait = True
-                        elif y_joystick > 60000 and x_joystick < 3000:
-                            r += (6,)
-                            wait = True
-                        elif y_joystick < 3000 and x_joystick > 60000:
-                            r += (7,)
-                            wait = True
-                        elif y_joystick < 3000 and x_joystick < 30000:
-                            r += (8,)
-                            wait = True
-                    if wait:
-                        if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
-                            wait = False
-                    sleep(.1)
-            repeat += 1
-            sleep(.1)
     timer += 1
     
-    print(password)
     
     sleep(.1) # Send MQTT payload every 10 seconds
+
 
