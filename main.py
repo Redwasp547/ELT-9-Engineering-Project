@@ -334,15 +334,28 @@ while True:
     if screen == 3:
         r = ()
         start_flag = False
-		if repeat >= 10000:
-            try:                                                                       # <<< DO NOT MODIFY >>>
-                client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
-                print(f"Published: {message_json}") # Print MQTT payload to the Shell
-            except Exception as e:                                                     # <<< DO NOT MODIFY >>>
-                print("Publish failed:",e)
-            repeat = 0
-        print("screen3")
         while start_flag == False:
+            # Create and send MQTT payload                               # <<< DO NOT MODIFY >>>
+            adc_value = thermistor.read_u16()
+            x_joystick = x_joystick_pin.read_u16()
+            y_joystick = y_joystick_pin.read_u16()
+            V_out = (V_in / 65535) * adc_value #[volts]
+            Rt = (V_out * R1) / (V_in - V_out) #[ohms] thermistor resistance
+            TempK = 1 / (A + (B * log(Rt)) + (C * pow(log(Rt), 3)))
+            TempC = TempK - 273.15 #[Celsius]
+            temperature_sensor_reading = TempC
+            message_data = {                                             # <<< DO NOT MODIFY >>>
+                "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
+                "temperatureReading": temperature_sensor_reading         # <<< DO NOT MODIFY >>>
+            }                                                            # <<< DO NOT MODIFY >>>
+            message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
+            if repeat >= 100:
+                try:                                                                       # <<< DO NOT MODIFY >>>
+                    client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
+                    print(f"Published: {message_json}") # Print MQTT payload to the Shell
+                except Exception as e:                                                     # <<< DO NOT MODIFY >>>
+                    print("Publish failed:",e)
+                repeat = 0
             display.fill(0) # clears display
             display.text("Enter password", 0, 10)
             display.show()
@@ -393,7 +406,7 @@ while True:
             if wait:
                 if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
                     wait = False
-			repeat += 1
+            repeat += 1
             sleep(.1)
         sleep(1)
         screen = 0
@@ -418,19 +431,10 @@ while True:
     }                                                            # <<< DO NOT MODIFY >>>
     message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
     
-    # Try to publish message to MQTT broker                                    # <<< DO NOT MODIFY >>>
-    if repeat == 100:
-        try:                                                                       # <<< DO NOT MODIFY >>>
-            client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
-            print(f"Published: {message_json}") # Print MQTT payload to the Shell
-        except Exception as e:                                                     # <<< DO NOT MODIFY >>>
-            print("Publish failed:",e)
-        repeat = 0
-    repeat += 1
-
     if timer >= 10000:
         timer = 0
         r = ()
+        start_flag = False
         while start_flag == False:
             display.fill(0) # clears display
             display.text("Enter Password", 0, 10) # display text starting at x=0, y=10
@@ -442,8 +446,22 @@ while True:
             Rt = (V_out * R1) / (V_in - V_out) #[ohms] thermistor resistance
             TempK = 1 / (A + (B * log(Rt)) + (C * pow(log(Rt), 3)))
             TempC = TempK - 273.15 #[Celsius]
-            print(TempC)
-    
+
+            temperature_sensor_reading = TempC
+
+            message_data = {                                             # <<< DO NOT MODIFY >>>
+                "sensorID": SENSOR_ID,                                   # <<< DO NOT MODIFY >>>
+                "temperatureReading": temperature_sensor_reading         # <<< DO NOT MODIFY >>>
+            }                                                            # <<< DO NOT MODIFY >>>
+            message_json = json.dumps(message_data)  # Convert to JSON   # <<< DO NOT MODIFY >>>
+            if repeat >= 100:
+                try:                                                                       # <<< DO NOT MODIFY >>>
+                    client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
+                    print(f"Published: {message_json}") # Print MQTT payload to the Shell
+                except Exception as e:                                                     # <<< DO NOT MODIFY >>>
+                    print("Publish failed:",e)
+                repeat = 0
+            
             if len(r) == passwordLength and r == password:
                 start_flag = True
                 display.fill(0) # clears display
@@ -488,12 +506,16 @@ while True:
             if wait:
                 if x_joystick < 38000 and y_joystick < 38000 and x_joystick > 28000 and y_joystick > 28000:
                     wait = False
-
-            
+            repeat += 1
+            sleep(.1)  
+    # Try to publish message to MQTT broker                                    # <<< DO NOT MODIFY >>>
+    if repeat == 100:
+        try:                                                                       # <<< DO NOT MODIFY >>>
+            client.publish(TOPIC, message_json, retain=True) # Send MQTT payload   # <<< DO NOT MODIFY >>>
+            print(f"Published: {message_json}") # Print MQTT payload to the Shell
+        except Exception as e:                                                     # <<< DO NOT MODIFY >>>
+            print("Publish failed:",e)
+        repeat = 0
+    repeat += 1  
     timer += 1
-    
-    
     sleep(.1) # Send MQTT payload every 10 seconds
-
-
-
