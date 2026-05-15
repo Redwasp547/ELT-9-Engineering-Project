@@ -129,7 +129,7 @@ while start_flag == False:
         display.text("Wrong password", 0, 10)
         display.text("Please wait 15 secs", 0, 20)# display text starting at x=0, y=10
         display.show()
-        sleep(0)
+        sleep(15)
     
     elif wait == False:
         if y_joystick > 50000 and x_joystick > 50000:
